@@ -18,6 +18,7 @@
             tool: @json(route('kiosk.tool')),
             commit: @json(route('kiosk.commit')),
         };
+        window.KIOSK_LOCATIONS = @json($locations);
     </script>
 </head>
 <body>
@@ -101,7 +102,16 @@
                     <button @click="qty = qty + 1" class="bg-slate-700 px-4 py-2 rounded-md text-xl">+</button>
                 </div>
                 <input x-model="workOrder" placeholder="Orden de producción" class="w-full bg-slate-900 border border-slate-600 rounded-md px-3 py-2 text-sm">
-                <input x-model="machine" placeholder="Máquina" class="w-full bg-slate-900 border border-slate-600 rounded-md px-3 py-2 text-sm">
+
+                <div class="space-y-1">
+                    <label class="text-xs uppercase text-slate-400">Ubicación destino *</label>
+                    <select x-model.number="toLocationId" class="w-full bg-slate-900 border border-slate-600 rounded-md px-3 py-2 text-sm">
+                        <option value="">— elige —</option>
+                        <template x-for="loc in locations" :key="loc.id">
+                            <option :value="loc.id" x-text="loc.name + ' (' + loc.type + ')'"></option>
+                        </template>
+                    </select>
+                </div>
 
                 <div x-show="tool && tool.type === 'durable'" class="space-y-1">
                     <label class="text-xs uppercase text-slate-400">Regresar antes de</label>

@@ -56,7 +56,7 @@ class ToolController extends Controller
 
     public function show(Tool $tool)
     {
-        $tool->load('category', 'location', 'movements.customer', 'movements.operator', 'maintenances');
+        $tool->load('category', 'location', 'movements.customer', 'movements.operator', 'movements.toLocation', 'maintenances');
         $locations = Location::where('is_active', true)->orderBy('name')->get();
         return view('tools.show', compact('tool', 'locations'));
     }

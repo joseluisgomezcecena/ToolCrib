@@ -14,7 +14,7 @@ class Movement extends Model
         'tool_id', 'customer_id', 'operator_id',
         'from_location_id', 'to_location_id',
         'type', 'qty',
-        'work_order', 'machine', 'notes',
+        'work_order', 'notes',
         'occurred_at', 'return_due_at', 'returned_at',
     ];
 

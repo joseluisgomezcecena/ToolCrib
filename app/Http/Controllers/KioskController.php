@@ -14,7 +14,10 @@ class KioskController extends Controller
     public function index()
     {
         abort_unless(auth()->user()?->can('kiosk.operate'), 403);
-        return view('kiosk.index');
+        $locations = \App\Models\Location::where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name', 'type']);
+        return view('kiosk.index', compact('locations'));
     }
 
     public function lookupTool(Request $request)
@@ -59,7 +62,7 @@ class KioskController extends Controller
             'employee_code' => 'required|string',
             'qty' => 'required|integer|min:1',
             'work_order' => 'nullable|string|max:120',
-            'machine' => 'nullable|string|max:120',
+            'to_location_id' => 'required|exists:locations,id',
             'return_due_at' => 'nullable|date|after_or_equal:now',
         ]);
 
@@ -73,7 +76,7 @@ class KioskController extends Controller
                 'operator_id' => auth()->id(),
                 'qty' => $data['qty'],
                 'work_order' => $data['work_order'] ?? null,
-                'machine' => $data['machine'] ?? null,
+                'to_location_id' => $data['to_location_id'],
                 'return_due_at' => $data['return_due_at'] ?? null,
             ]);
         } catch (\RuntimeException $e) {

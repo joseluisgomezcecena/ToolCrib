@@ -32,16 +32,12 @@
                         <label class="block text-sm font-medium">Orden de producción</label>
                         <input name="work_order" class="mt-1 w-full border rounded-md px-3 py-2" />
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium">Máquina</label>
-                        <input name="machine" class="mt-1 w-full border rounded-md px-3 py-2" />
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium">Ubicación destino</label>
-                        <select name="to_location_id" class="mt-1 w-full border rounded-md px-3 py-2">
-                            <option value="">—</option>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium">Ubicación destino *</label>
+                        <select name="to_location_id" required class="mt-1 w-full border rounded-md px-3 py-2">
+                            <option value="">— selecciona a qué máquina/línea va —</option>
                             @foreach($locations as $l)
-                                <option value="{{ $l->id }}">{{ $l->name }}</option>
+                                <option value="{{ $l->id }}">{{ $l->name }} ({{ $l->type }})</option>
                             @endforeach
                         </select>
                     </div>

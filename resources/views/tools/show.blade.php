@@ -66,7 +66,7 @@
                         <th class="px-4 py-2">Qty</th>
                         <th class="px-4 py-2 text-left">Cliente</th>
                         <th class="px-4 py-2 text-left">Operador</th>
-                        <th class="px-4 py-2 text-left">Orden / Máquina</th>
+                        <th class="px-4 py-2 text-left">Orden / Destino</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y">
@@ -86,7 +86,7 @@
                             <td class="px-4 py-1.5 text-center">{{ $m->qty }}</td>
                             <td class="px-4 py-1.5">{{ optional($m->customer)->name ?? '—' }}</td>
                             <td class="px-4 py-1.5">{{ optional($m->operator)->name ?? '—' }}</td>
-                            <td class="px-4 py-1.5">{{ $m->work_order }} / {{ $m->machine }}</td>
+                            <td class="px-4 py-1.5">{{ $m->work_order ?? '—' }} / {{ optional($m->toLocation)->name ?? '—' }}</td>
                         </tr>
                     @empty
                         <tr><td colspan="6" class="px-4 py-8 text-center text-gray-500">Sin movimientos.</td></tr>

@@ -52,8 +52,7 @@ class MovementController extends Controller
             'customer_code' => 'nullable|string',
             'qty' => 'required|integer|min:1',
             'work_order' => 'nullable|string|max:120',
-            'machine' => 'nullable|string|max:120',
-            'to_location_id' => 'nullable|exists:locations,id',
+            'to_location_id' => 'required|exists:locations,id',
             'return_due_at' => 'nullable|date|after_or_equal:now',
             'notes' => 'nullable|string|max:500',
         ]);
@@ -75,7 +74,6 @@ class MovementController extends Controller
                 'operator_id' => auth()->id(),
                 'qty' => $data['qty'],
                 'work_order' => $data['work_order'] ?? null,
-                'machine' => $data['machine'] ?? null,
                 'to_location_id' => $data['to_location_id'] ?? null,
                 'return_due_at' => $data['return_due_at'] ?? null,
                 'notes' => $data['notes'] ?? null,

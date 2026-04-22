@@ -14,8 +14,7 @@
             <div>
                 <label class="text-xs text-gray-600">Agrupar por</label>
                 <select name="group_by" class="border rounded-md px-3 py-1.5 text-sm">
-                    <option value="machine" @selected($groupBy==='machine')>Máquina</option>
-                    <option value="line" @selected($groupBy==='line')>Línea (ubicación destino)</option>
+                    <option value="location" @selected($groupBy==='location')>Ubicación (máquina / línea)</option>
                     <option value="work_order" @selected($groupBy==='work_order')>Orden de producción</option>
                 </select>
             </div>

@@ -11,7 +11,8 @@ window.kioskApp = function () {
         tool: null,
         qty: 1,
         workOrder: '',
-        machine: '',
+        toLocationId: '',
+        locations: window.KIOSK_LOCATIONS || [],
         returnDueAt: '',
         sending: false,
         message: '',
@@ -127,6 +128,10 @@ window.kioskApp = function () {
         },
 
         async commit() {
+            if (!this.toLocationId) {
+                this.flash('error', 'Selecciona la ubicación destino.');
+                return;
+            }
             this.sending = true;
             this.message = '';
             try {
@@ -142,7 +147,7 @@ window.kioskApp = function () {
                         employee_code: this.employee.employee_code,
                         qty: this.qty,
                         work_order: this.workOrder || null,
-                        machine: this.machine || null,
+                        to_location_id: this.toLocationId || null,
                         return_due_at: this.tool.type === 'durable' ? (this.returnDueAt || null) : null,
                     }),
                 });
@@ -163,7 +168,7 @@ window.kioskApp = function () {
             this.tool = null;
             this.qty = 1;
             this.workOrder = '';
-            this.machine = '';
+            this.toLocationId = '';
             this.returnDueAt = '';
         },
 

@@ -18,22 +18,29 @@ class ReportController extends Controller
     {
         $from = $request->date('from') ?? now()->subMonth();
         $to = $request->date('to') ?? now();
-        $groupBy = $request->string('group_by')->value() ?: 'machine';
+        $groupBy = $request->string('group_by')->value() ?: 'location';
 
-        $column = match ($groupBy) {
-            'work_order' => 'work_order',
-            'line' => 'to_location_id',
-            default => 'machine',
-        };
-
-        $rows = Movement::query()
-            ->selectRaw("$column as bucket, SUM(qty) as total, COUNT(*) as movs")
-            ->whereIn('type', ['checkout', 'consume'])
-            ->whereBetween('occurred_at', [$from, $to])
-            ->groupBy('bucket')
-            ->orderByDesc('total')
-            ->limit(50)
-            ->get();
+        if ($groupBy === 'work_order') {
+            $rows = Movement::query()
+                ->selectRaw('work_order as bucket, SUM(qty) as total, COUNT(*) as movs')
+                ->whereIn('type', ['checkout', 'consume'])
+                ->whereBetween('occurred_at', [$from, $to])
+                ->whereNotNull('work_order')
+                ->groupBy('work_order')
+                ->orderByDesc('total')
+                ->limit(50)
+                ->get();
+        } else {
+            $rows = Movement::query()
+                ->leftJoin('locations', 'locations.id', '=', 'movements.to_location_id')
+                ->selectRaw('locations.name as bucket, locations.type as loc_type, SUM(movements.qty) as total, COUNT(*) as movs')
+                ->whereIn('movements.type', ['checkout', 'consume'])
+                ->whereBetween('movements.occurred_at', [$from, $to])
+                ->groupBy('locations.id', 'locations.name', 'locations.type')
+                ->orderByDesc('total')
+                ->limit(50)
+                ->get();
+        }
 
         $byTool = Movement::query()
             ->join('tools', 'tools.id', '=', 'movements.tool_id')

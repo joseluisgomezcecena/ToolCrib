@@ -38,7 +38,6 @@ class MovementService
                 'type' => $type,
                 'qty' => $qty,
                 'work_order' => $data['work_order'] ?? null,
-                'machine' => $data['machine'] ?? null,
                 'notes' => $data['notes'] ?? null,
                 'occurred_at' => now(),
                 'return_due_at' => $type === 'checkout' ? ($data['return_due_at'] ?? now()->addHours(8)) : null,
@@ -84,7 +83,6 @@ class MovementService
                 'type' => 'checkin',
                 'qty' => $movement->qty,
                 'work_order' => $movement->work_order,
-                'machine' => $movement->machine,
                 'occurred_at' => now(),
             ]);
 
