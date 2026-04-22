@@ -12,6 +12,7 @@ window.kioskApp = function () {
         qty: 1,
         workOrder: '',
         machine: '',
+        returnDueAt: '',
         sending: false,
         message: '',
         messageType: '',
@@ -20,6 +21,12 @@ window.kioskApp = function () {
         cameraId: null,
         scanning: false,
         scannerError: '',
+
+        defaultReturnDueAt() {
+            const d = new Date(Date.now() + 8 * 3600 * 1000);
+            const pad = (n) => String(n).padStart(2, '0');
+            return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        },
 
         get stepTitle() {
             if (this.step === 'employee') return 'Paso 1 · Escanea tu gafete';
@@ -107,6 +114,11 @@ window.kioskApp = function () {
                     if (!r.ok) throw new Error('Herramienta no encontrada');
                     this.tool = await r.json();
                     this.step = 'confirm';
+                    if (this.tool.type === 'durable') {
+                        this.returnDueAt = this.defaultReturnDueAt();
+                    } else {
+                        this.returnDueAt = '';
+                    }
                     this.flash('ok', 'Herramienta: ' + this.tool.name);
                 } catch (e) {
                     this.flash('error', e.message);
@@ -131,6 +143,7 @@ window.kioskApp = function () {
                         qty: this.qty,
                         work_order: this.workOrder || null,
                         machine: this.machine || null,
+                        return_due_at: this.tool.type === 'durable' ? (this.returnDueAt || null) : null,
                     }),
                 });
                 const j = await r.json();
@@ -151,6 +164,7 @@ window.kioskApp = function () {
             this.qty = 1;
             this.workOrder = '';
             this.machine = '';
+            this.returnDueAt = '';
         },
 
         flash(type, msg) {

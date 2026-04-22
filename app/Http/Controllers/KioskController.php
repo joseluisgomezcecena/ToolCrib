@@ -60,6 +60,7 @@ class KioskController extends Controller
             'qty' => 'required|integer|min:1',
             'work_order' => 'nullable|string|max:120',
             'machine' => 'nullable|string|max:120',
+            'return_due_at' => 'nullable|date|after_or_equal:now',
         ]);
 
         $tool = Tool::where('code', $data['tool_code'])->firstOrFail();
@@ -73,7 +74,7 @@ class KioskController extends Controller
                 'qty' => $data['qty'],
                 'work_order' => $data['work_order'] ?? null,
                 'machine' => $data['machine'] ?? null,
-                'return_due_at' => $tool->type === 'durable' ? now()->addHours(8) : null,
+                'return_due_at' => $data['return_due_at'] ?? null,
             ]);
         } catch (\RuntimeException $e) {
             return response()->json(['ok' => false, 'error' => $e->getMessage()], 422);

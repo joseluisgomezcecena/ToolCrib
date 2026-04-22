@@ -102,6 +102,17 @@
                 </div>
                 <input x-model="workOrder" placeholder="Orden de producción" class="w-full bg-slate-900 border border-slate-600 rounded-md px-3 py-2 text-sm">
                 <input x-model="machine" placeholder="Máquina" class="w-full bg-slate-900 border border-slate-600 rounded-md px-3 py-2 text-sm">
+
+                <div x-show="tool && tool.type === 'durable'" class="space-y-1">
+                    <label class="text-xs uppercase text-slate-400">Regresar antes de</label>
+                    <input type="datetime-local" x-model="returnDueAt"
+                           class="w-full bg-slate-900 border border-slate-600 rounded-md px-3 py-2 text-sm">
+                    <div class="text-xs text-slate-500">Solo aplica a herramientas que sí regresan (durables).</div>
+                </div>
+                <div x-show="tool && tool.type === 'consumible'" class="text-xs text-orange-300 bg-orange-900/20 border border-orange-700/40 rounded-md p-2">
+                    Consumible: no regresa, se baja del stock definitivamente.
+                </div>
+
                 <button @click="commit()" :disabled="sending"
                         class="w-full bg-emerald-500 hover:bg-emerald-600 text-white py-4 rounded-md text-xl font-bold disabled:opacity-50">
                     Registrar salida

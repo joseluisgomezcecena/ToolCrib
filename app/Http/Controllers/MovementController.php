@@ -54,7 +54,7 @@ class MovementController extends Controller
             'work_order' => 'nullable|string|max:120',
             'machine' => 'nullable|string|max:120',
             'to_location_id' => 'nullable|exists:locations,id',
-            'return_due_at' => 'nullable|date|after:now',
+            'return_due_at' => 'nullable|date|after_or_equal:now',
             'notes' => 'nullable|string|max:500',
         ]);
 
