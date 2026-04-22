@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php -v)",
+      "Bash(composer -V)",
+      "Bash(mysql --version)",
+      "Bash(composer create-project *)",
+      "Bash(/c/xampp/mysql/bin/mysql.exe -u root -e \"CREATE DATABASE IF NOT EXISTS nexus_tool_crib CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci; SHOW DATABASES LIKE 'nexus_tool_crib';\")",
+      "Read(//c/Program Files/**)",
+      "Read(//c/Program Files/MySQL/MySQL Server 8.0/bin/**)",
+      "Read(//c/Program Files/MySQL/MySQL Server 8.4/bin/**)",
+      "Read(//c/Program Files/MySQL/MySQL Server 9.0/bin/**)",
+      "Bash(php -r 'try { $pdo = new PDO\\('\\\\''mysql:host=127.0.0.1;port=3306'\\\\'', '\\\\''root'\\\\'', '\\\\''root'\\\\''\\); $pdo->exec\\('\\\\''CREATE DATABASE IF NOT EXISTS nexus_tool_crib CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci'\\\\''\\); echo '\\\\''DB_OK'\\\\''.PHP_EOL; $r = $pdo->query\\('\\\\''SHOW DATABASES LIKE \"nexus_tool_crib\"'\\\\''\\)->fetchAll\\(\\); print_r\\($r\\); } catch\\(Exception $e\\) { echo '\\\\''ERR: '\\\\''.$e->getMessage\\(\\); }')",
+      "Bash(php artisan *)",
+      "Bash(composer require *)",
+      "Bash(npm run *)",
+      "Bash(npm install *)",
+      "Bash(echo \"pid=$!\" sleep 3 curl -s -o /tmp/root.html -w \"HTTP %{http_code} -> %{redirect_url}\\\\n\" http://127.0.0.1:8000/)",
+      "Bash(curl -s -o /tmp/login.html -w \"login HTTP %{http_code}\\\\n\" http://127.0.0.1:8000/login)"
+    ]
+  }
+}
