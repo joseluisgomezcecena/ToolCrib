@@ -1,3 +1,7 @@
+@php
+    $canConfig = auth()->user()->hasAnyRole(['super_admin', 'toolcrib']);
+    $configActive = request()->routeIs('users.*', 'categories.*', 'locations.*');
+@endphp
 <nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
@@ -6,7 +10,7 @@
                     <a href="{{ route('dashboard') }}" class="font-bold text-indigo-600">Nexus Tool Crib</a>
                 </div>
 
-                <div class="hidden space-x-6 sm:-my-px sm:ms-10 sm:flex">
+                <div class="hidden space-x-6 sm:-my-px sm:ms-10 sm:flex items-center">
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">Dashboard</x-nav-link>
 
                     @can('tools.view')
@@ -16,6 +20,10 @@
                     @can('movements.view')
                         <x-nav-link :href="route('movements.index')" :active="request()->routeIs('movements.*')">Movimientos</x-nav-link>
                     @endcan
+
+                    @hasanyrole('super_admin|toolcrib')
+                        <x-nav-link :href="route('purchases.index')" :active="request()->routeIs('purchases.*')">Compras</x-nav-link>
+                    @endhasanyrole
 
                     @hasrole('cliente')
                         <x-nav-link :href="route('mis.movimientos')" :active="request()->routeIs('mis.movimientos')">Mis herramientas</x-nav-link>
@@ -37,13 +45,39 @@
                         </x-nav-link>
                     @endcan
 
+                    @can('maintenances.view')
+                        <x-nav-link :href="route('maintenances.index')" :active="request()->routeIs('maintenances.*')">Mantenimientos</x-nav-link>
+                    @endcan
+
                     @can('reports.view')
                         <x-nav-link :href="route('reports.index')" :active="request()->routeIs('reports.*')">Reportes</x-nav-link>
                     @endcan
 
-                    @hasrole('super_admin')
-                        <x-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">Usuarios</x-nav-link>
-                    @endhasrole
+                    @if($canConfig)
+                        <div class="relative h-16 flex items-center">
+                            <x-dropdown align="left" width="48">
+                                <x-slot name="trigger">
+                                    <button @class([
+                                        'inline-flex items-center h-16 px-1 pt-1 border-b-2 text-sm font-medium leading-5 focus:outline-none transition duration-150 ease-in-out',
+                                        'border-indigo-400 text-gray-900 focus:border-indigo-700' => $configActive,
+                                        'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:text-gray-700 focus:border-gray-300' => ! $configActive,
+                                    ])>
+                                        Configuración
+                                        <svg class="ms-1 h-4 w-4 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                                    </button>
+                                </x-slot>
+                                <x-slot name="content">
+                                    @hasrole('super_admin')
+                                        <x-dropdown-link :href="route('users.index')">👤 Usuarios</x-dropdown-link>
+                                    @endhasrole
+                                    @can('categories.manage')
+                                        <x-dropdown-link :href="route('categories.index')">🏷️ Categorías</x-dropdown-link>
+                                        <x-dropdown-link :href="route('locations.index')">📍 Ubicaciones</x-dropdown-link>
+                                    @endcan
+                                </x-slot>
+                            </x-dropdown>
+                        </div>
+                    @endif
                 </div>
             </div>
 
@@ -63,11 +97,6 @@
                     </x-slot>
 
                     <x-slot name="content">
-                        @can('categories.manage')
-                            <x-dropdown-link :href="route('categories.index')">Categorías</x-dropdown-link>
-                            <x-dropdown-link :href="route('locations.index')">Ubicaciones</x-dropdown-link>
-                            <x-dropdown-link :href="route('maintenances.index')">Mantenimientos</x-dropdown-link>
-                        @endcan
                         <x-dropdown-link :href="route('profile.edit')">Perfil</x-dropdown-link>
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
@@ -93,9 +122,23 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">Dashboard</x-responsive-nav-link>
             @can('tools.view')<x-responsive-nav-link :href="route('tools.index')">Herramientas</x-responsive-nav-link>@endcan
             @can('movements.view')<x-responsive-nav-link :href="route('movements.index')">Movimientos</x-responsive-nav-link>@endcan
+            @hasanyrole('super_admin|toolcrib')<x-responsive-nav-link :href="route('purchases.index')">Compras</x-responsive-nav-link>@endhasanyrole
             @can('alerts.view')<x-responsive-nav-link :href="route('alerts.index')">Alertas</x-responsive-nav-link>@endcan
+            @can('maintenances.view')<x-responsive-nav-link :href="route('maintenances.index')">Mantenimientos</x-responsive-nav-link>@endcan
             @can('reports.view')<x-responsive-nav-link :href="route('reports.index')">Reportes</x-responsive-nav-link>@endcan
-            @hasrole('super_admin')<x-responsive-nav-link :href="route('users.index')">Usuarios</x-responsive-nav-link>@endhasrole
+
+            @if($canConfig)
+                <div class="border-t border-gray-200 mt-2 pt-2">
+                    <div class="px-4 pb-1 text-xs font-semibold uppercase text-gray-500">Configuración</div>
+                    @hasrole('super_admin')
+                        <x-responsive-nav-link :href="route('users.index')">Usuarios</x-responsive-nav-link>
+                    @endhasrole
+                    @can('categories.manage')
+                        <x-responsive-nav-link :href="route('categories.index')">Categorías</x-responsive-nav-link>
+                        <x-responsive-nav-link :href="route('locations.index')">Ubicaciones</x-responsive-nav-link>
+                    @endcan
+                </div>
+            @endif
         </div>
 
         <div class="pt-4 pb-1 border-t border-gray-200">
