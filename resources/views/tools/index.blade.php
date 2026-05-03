@@ -95,6 +95,6 @@
             </table>
         </div>
 
-        <div>{{ $tools->links() }}</div>
+        @include('partials.pagination', ['paginator' => $tools])
     </div>
 </x-app-layout>

@@ -9,7 +9,7 @@
                     <tr><th class="px-4 py-2 text-left">Herramienta</th><th class="px-4 py-2">Veces</th></tr>
                 </thead>
                 <tbody class="divide-y">
-                    @foreach($most as $t)
+                    @forelse($most as $t)
                         <tr>
                             <td class="px-4 py-2">
                                 <div class="font-medium">{{ $t->name }}</div>
@@ -17,9 +17,14 @@
                             </td>
                             <td class="px-4 py-2 text-center">{{ $t->uses }}</td>
                         </tr>
-                    @endforeach
+                    @empty
+                        <tr><td colspan="2" class="px-4 py-8 text-center text-gray-500">Sin datos.</td></tr>
+                    @endforelse
                 </tbody>
             </table>
+            <div class="border-t">
+                @include('partials.pagination', ['paginator' => $most])
+            </div>
         </div>
 
         <div class="bg-white rounded-lg shadow">
@@ -29,7 +34,7 @@
                     <tr><th class="px-4 py-2 text-left">Herramienta</th><th class="px-4 py-2">Veces</th></tr>
                 </thead>
                 <tbody class="divide-y">
-                    @foreach($least as $t)
+                    @forelse($least as $t)
                         <tr>
                             <td class="px-4 py-2">
                                 <div class="font-medium">{{ $t->name }}</div>
@@ -37,9 +42,14 @@
                             </td>
                             <td class="px-4 py-2 text-center">{{ $t->uses }}</td>
                         </tr>
-                    @endforeach
+                    @empty
+                        <tr><td colspan="2" class="px-4 py-8 text-center text-gray-500">Sin datos.</td></tr>
+                    @endforelse
                 </tbody>
             </table>
+            <div class="border-t">
+                @include('partials.pagination', ['paginator' => $least])
+            </div>
         </div>
     </div>
 </x-app-layout>

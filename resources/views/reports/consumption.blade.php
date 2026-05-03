@@ -40,6 +40,9 @@
                         @endforelse
                     </tbody>
                 </table>
+                <div class="border-t">
+                    @include('partials.pagination', ['paginator' => $rows])
+                </div>
             </div>
 
             <div class="bg-white rounded-lg shadow">
@@ -63,6 +66,9 @@
                         @endforelse
                     </tbody>
                 </table>
+                <div class="border-t">
+                    @include('partials.pagination', ['paginator' => $byTool])
+                </div>
             </div>
         </div>
     </div>

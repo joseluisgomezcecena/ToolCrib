@@ -28,7 +28,7 @@ class MovementController extends Controller
                                               ->orWhere('code', 'like', "%{$term}%"));
         }
 
-        $movements = $q->latest('occurred_at')->paginate(25)->withQueryString();
+        $movements = $q->latest('occurred_at')->paginate(10)->withQueryString();
 
         return view('movements.index', compact('movements'));
     }

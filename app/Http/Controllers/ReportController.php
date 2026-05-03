@@ -28,8 +28,8 @@ class ReportController extends Controller
                 ->whereNotNull('work_order')
                 ->groupBy('work_order')
                 ->orderByDesc('total')
-                ->limit(50)
-                ->get();
+                ->paginate(20, ['*'], 'bucketPage')
+                ->withQueryString();
         } else {
             $rows = Movement::query()
                 ->leftJoin('locations', 'locations.id', '=', 'movements.to_location_id')
@@ -38,8 +38,8 @@ class ReportController extends Controller
                 ->whereBetween('movements.occurred_at', [$from, $to])
                 ->groupBy('locations.id', 'locations.name', 'locations.type')
                 ->orderByDesc('total')
-                ->limit(50)
-                ->get();
+                ->paginate(20, ['*'], 'bucketPage')
+                ->withQueryString();
         }
 
         $byTool = Movement::query()
@@ -49,8 +49,8 @@ class ReportController extends Controller
             ->whereBetween('movements.occurred_at', [$from, $to])
             ->groupBy('tools.id', 'tools.name', 'tools.code')
             ->orderByDesc('total')
-            ->limit(20)
-            ->get();
+            ->paginate(20, ['*'], 'toolPage')
+            ->withQueryString();
 
         return view('reports.consumption', compact('rows', 'byTool', 'from', 'to', 'groupBy'));
     }
@@ -65,8 +65,8 @@ class ReportController extends Controller
             ->selectRaw('tools.*, COUNT(movements.id) as uses')
             ->groupBy('tools.id')
             ->orderByDesc('uses')
-            ->limit(15)
-            ->get();
+            ->paginate(15, ['*'], 'mostPage')
+            ->withQueryString();
 
         $least = Tool::query()
             ->leftJoin('movements', function ($j) {
@@ -76,8 +76,8 @@ class ReportController extends Controller
             ->selectRaw('tools.*, COUNT(movements.id) as uses')
             ->groupBy('tools.id')
             ->orderBy('uses')
-            ->limit(15)
-            ->get();
+            ->paginate(15, ['*'], 'leastPage')
+            ->withQueryString();
 
         return view('reports.usage', compact('most', 'least'));
     }

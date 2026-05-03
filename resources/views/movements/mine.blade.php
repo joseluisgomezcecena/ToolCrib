@@ -39,6 +39,6 @@
                 </tbody>
             </table>
         </div>
-        <div class="mt-3">{{ $movements->links() }}</div>
+        <div class="mt-3">@include('partials.pagination', ['paginator' => $movements])</div>
     </div>
 </x-app-layout>

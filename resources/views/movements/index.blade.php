@@ -68,6 +68,6 @@
             </table>
         </div>
 
-        <div>{{ $movements->links() }}</div>
+        @include('partials.pagination', ['paginator' => $movements])
     </div>
 </x-app-layout>

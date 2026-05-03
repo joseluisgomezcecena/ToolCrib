@@ -59,6 +59,6 @@
             </ul>
         </div>
 
-        <div>{{ $alerts->links() }}</div>
+        @include('partials.pagination', ['paginator' => $alerts])
     </div>
 </x-app-layout>

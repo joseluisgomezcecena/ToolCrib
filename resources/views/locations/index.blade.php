@@ -57,7 +57,7 @@
                     </tbody>
                 </table>
             </div>
-            <div class="mt-3">{{ $locations->links() }}</div>
+            <div class="mt-3">@include('partials.pagination', ['paginator' => $locations])</div>
         </div>
     </div>
 </x-app-layout>
