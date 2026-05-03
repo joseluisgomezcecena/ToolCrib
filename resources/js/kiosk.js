@@ -5,6 +5,7 @@ window.Alpine = Alpine;
 
 window.kioskApp = function () {
     return {
+        mode: 'checkout', // 'checkout' | 'checkin'
         step: 'employee',
         manualCode: '',
         employee: null,
@@ -14,6 +15,11 @@ window.kioskApp = function () {
         toLocationId: '',
         locations: window.KIOSK_LOCATIONS || [],
         returnDueAt: '',
+
+        // Checkin state
+        pendingMovements: [],
+        selectedMovement: null,
+
         sending: false,
         message: '',
         messageType: '',
@@ -30,9 +36,19 @@ window.kioskApp = function () {
         },
 
         get stepTitle() {
-            if (this.step === 'employee') return 'Paso 1 · Escanea tu gafete';
-            if (this.step === 'tool') return 'Paso 2 · Escanea la herramienta';
-            return 'Paso 3 · Confirma la salida';
+            if (this.mode === 'checkin') {
+                if (this.pendingMovements.length === 0) return 'Devolver · Escanea el tag o código';
+                if (this.pendingMovements.length === 1 || this.selectedMovement) return 'Devolver · Confirma';
+                return 'Devolver · Selecciona qué devolución';
+            }
+            if (this.step === 'employee') return 'Sacar · Paso 1 · Escanea tu gafete';
+            if (this.step === 'tool') return 'Sacar · Paso 2 · Escanea la herramienta';
+            return 'Sacar · Paso 3 · Confirma la salida';
+        },
+
+        switchMode(newMode) {
+            this.mode = newMode;
+            this.reset();
         },
 
         async init() {
@@ -99,6 +115,11 @@ window.kioskApp = function () {
             if (!code || this.sending) return;
             this.manualCode = '';
 
+            if (this.mode === 'checkin') {
+                await this.lookupCheckin(code);
+                return;
+            }
+
             if (this.step === 'employee') {
                 try {
                     const r = await fetch(window.KIOSK_ROUTES.employee + '?code=' + encodeURIComponent(code));
@@ -127,6 +148,28 @@ window.kioskApp = function () {
             }
         },
 
+        async lookupCheckin(code) {
+            try {
+                const r = await fetch(window.KIOSK_ROUTES.checkinLookup + '?code=' + encodeURIComponent(code));
+                if (!r.ok) {
+                    const j = await r.json().catch(() => ({}));
+                    throw new Error(j.message || 'No se encontró devolución pendiente');
+                }
+                const j = await r.json();
+                this.pendingMovements = j.movements || [];
+                if (this.pendingMovements.length === 1) {
+                    this.selectedMovement = this.pendingMovements[0];
+                }
+                this.flash('ok', `${this.pendingMovements.length} devolución(es) encontrada(s)`);
+            } catch (e) {
+                this.flash('error', e.message);
+            }
+        },
+
+        pickCheckin(m) {
+            this.selectedMovement = m;
+        },
+
         async commit() {
             if (!this.toLocationId) {
                 this.flash('error', 'Selecciona la ubicación destino.');
@@ -144,8 +187,9 @@ window.kioskApp = function () {
                     },
                     body: JSON.stringify({
                         tool_code: this.tool.code,
+                        tool_item_id: this.tool.item_id || null,
                         employee_code: this.employee.employee_code,
-                        qty: this.qty,
+                        qty: this.tool.tracking_mode === 'serialized' ? 1 : this.qty,
                         work_order: this.workOrder || null,
                         to_location_id: this.toLocationId || null,
                         return_due_at: this.tool.type === 'durable' ? (this.returnDueAt || null) : null,
@@ -153,7 +197,34 @@ window.kioskApp = function () {
                 });
                 const j = await r.json();
                 if (!r.ok || !j.ok) throw new Error(j.error || 'Error al registrar');
-                this.flash('ok', `Registrado: ${j.tool} × ${j.qty} para ${j.customer}`);
+                const label = j.tag ? `${j.tool} [${j.tag}]` : `${j.tool} × ${j.qty}`;
+                this.flash('ok', `Salida: ${label} para ${j.customer}`);
+                setTimeout(() => this.reset(), 2500);
+            } catch (e) {
+                this.flash('error', e.message);
+            } finally {
+                this.sending = false;
+            }
+        },
+
+        async commitCheckin() {
+            if (!this.selectedMovement) return;
+            this.sending = true;
+            this.message = '';
+            try {
+                const r = await fetch(window.KIOSK_ROUTES.checkin, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({ movement_id: this.selectedMovement.id }),
+                });
+                const j = await r.json();
+                if (!r.ok || !j.ok) throw new Error(j.error || 'Error al devolver');
+                const label = j.tag ? `${j.tool} [${j.tag}]` : j.tool;
+                this.flash('ok', `Devuelto: ${label} (era de ${j.customer})`);
                 setTimeout(() => this.reset(), 2500);
             } catch (e) {
                 this.flash('error', e.message);
@@ -170,6 +241,8 @@ window.kioskApp = function () {
             this.workOrder = '';
             this.toLocationId = '';
             this.returnDueAt = '';
+            this.pendingMovements = [];
+            this.selectedMovement = null;
         },
 
         flash(type, msg) {

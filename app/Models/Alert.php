@@ -11,7 +11,7 @@ class Alert extends Model
     use HasFactory;
 
     protected $fillable = [
-        'tool_id', 'user_id', 'movement_id',
+        'tool_id', 'tool_item_id', 'user_id', 'movement_id',
         'type', 'severity',
         'title', 'message',
         'data', 'read_at', 'resolved_at',

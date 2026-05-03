@@ -38,6 +38,16 @@
         </select>
     </div>
     <div>
+        <label class="block text-sm font-medium">Modo de rastreo *</label>
+        <select name="tracking_mode" class="mt-1 w-full border rounded-md px-3 py-2" required>
+            <option value="bulk" @selected(old('tracking_mode', $tool->tracking_mode ?? 'bulk') === 'bulk')>Bulk — stock agregado</option>
+            <option value="serialized" @selected(old('tracking_mode', $tool->tracking_mode ?? '') === 'serialized')>Serializada — cada pieza con tag único</option>
+        </select>
+        <div class="text-xs text-gray-500 mt-1">
+            Serializada: apropiado para calibradores, llaves caras, herramental CNC. Se crearán instancias automáticamente al guardar.
+        </div>
+    </div>
+    <div>
         <label class="block text-sm font-medium">Condición *</label>
         <select name="condition" class="mt-1 w-full border rounded-md px-3 py-2" required>
             <option value="ok" @selected(old('condition', $tool->condition ?? 'ok') === 'ok')>OK</option>

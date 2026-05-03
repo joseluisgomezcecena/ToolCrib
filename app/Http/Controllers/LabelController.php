@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Tool;
+use App\Models\ToolItem;
 use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\Encoding\Encoding;
 use Endroid\QrCode\ErrorCorrectionLevel;
@@ -14,29 +15,24 @@ class LabelController extends Controller
 {
     public function qr(Tool $tool, Request $request)
     {
-        $size = max(100, min((int) $request->query('size', 300), 1200));
-        $format = $request->query('format', 'svg');
+        return $this->buildQrResponse($tool->code, $request);
+    }
 
-        $builder = new Builder(
-            writer: $format === 'png' ? new PngWriter() : new SvgWriter(),
-            data: $tool->code,
-            encoding: new Encoding('UTF-8'),
-            errorCorrectionLevel: ErrorCorrectionLevel::Medium,
-            size: $size,
-            margin: 6,
-        );
-
-        $result = $builder->build();
-
-        return response($result->getString(), 200, [
-            'Content-Type' => $result->getMimeType(),
-            'Cache-Control' => 'public, max-age=3600',
-        ]);
+    public function itemQr(Tool $tool, ToolItem $item, Request $request)
+    {
+        abort_unless($item->tool_id === $tool->id, 404);
+        return $this->buildQrResponse($item->tag, $request);
     }
 
     public function show(Tool $tool)
     {
         return view('labels.single', compact('tool'));
+    }
+
+    public function itemShow(Tool $tool, ToolItem $item)
+    {
+        abort_unless($item->tool_id === $tool->id, 404);
+        return view('labels.item', compact('tool', 'item'));
     }
 
     public function sheet(Request $request)
@@ -49,5 +45,33 @@ class LabelController extends Controller
             : Tool::where('is_active', true)->orderBy('name')->get();
 
         return view('labels.sheet', compact('tools'));
+    }
+
+    public function itemsSheet(Tool $tool)
+    {
+        $items = $tool->items()->orderBy('tag')->get();
+        return view('labels.items-sheet', compact('tool', 'items'));
+    }
+
+    protected function buildQrResponse(string $data, Request $request)
+    {
+        $size = max(100, min((int) $request->query('size', 300), 1200));
+        $format = $request->query('format', 'svg');
+
+        $builder = new Builder(
+            writer: $format === 'png' ? new PngWriter() : new SvgWriter(),
+            data: $data,
+            encoding: new Encoding('UTF-8'),
+            errorCorrectionLevel: ErrorCorrectionLevel::Medium,
+            size: $size,
+            margin: 6,
+        );
+
+        $result = $builder->build();
+
+        return response($result->getString(), 200, [
+            'Content-Type' => $result->getMimeType(),
+            'Cache-Control' => 'public, max-age=3600',
+        ]);
     }
 }

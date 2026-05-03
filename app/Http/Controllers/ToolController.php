@@ -5,10 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\Location;
 use App\Models\Tool;
+use App\Services\MovementService;
 use Illuminate\Http\Request;
 
 class ToolController extends Controller
 {
+    public function __construct(protected MovementService $service) {}
+
     public function index(Request $request)
     {
         $q = Tool::query()->with('category', 'location');
@@ -50,15 +53,28 @@ class ToolController extends Controller
     {
         $this->authorizeCreate();
         $data = $this->validated($request);
-        Tool::create($data);
-        return redirect()->route('tools.index')->with('status', 'Herramienta creada.');
+        $tool = Tool::create($data);
+
+        if ($tool->isSerialized() && $tool->qty_total > 0) {
+            $this->service->generateItems($tool, $tool->qty_total);
+        }
+
+        return redirect()->route('tools.show', $tool)->with('status', 'Herramienta creada.');
     }
 
     public function show(Tool $tool)
     {
-        $tool->load('category', 'location', 'movements.customer', 'movements.operator', 'movements.toLocation', 'maintenances');
+        $tool->load('category', 'location', 'maintenances');
+        $movements = $tool->movements()
+            ->with('customer', 'operator', 'toLocation', 'toolItem')
+            ->latest('occurred_at')
+            ->paginate(15, ['*'], 'movs')
+            ->withQueryString();
         $locations = Location::where('is_active', true)->orderBy('name')->get();
-        return view('tools.show', compact('tool', 'locations'));
+        $items = $tool->isSerialized()
+            ? $tool->items()->with('location')->orderBy('tag')->paginate(20, ['*'], 'items')->withQueryString()
+            : null;
+        return view('tools.show', compact('tool', 'movements', 'locations', 'items'));
     }
 
     public function edit(Tool $tool)
@@ -105,6 +121,7 @@ class ToolController extends Controller
             'category_id' => 'nullable|exists:categories,id',
             'location_id' => 'nullable|exists:locations,id',
             'type' => 'required|in:durable,consumible',
+            'tracking_mode' => 'required|in:bulk,serialized',
             'condition' => 'required|in:ok,danado,scrap',
             'qty_total' => 'required|integer|min:0',
             'qty_available' => 'required|integer|min:0',

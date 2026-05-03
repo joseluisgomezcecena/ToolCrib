@@ -11,7 +11,7 @@ class Movement extends Model
     use HasFactory;
 
     protected $fillable = [
-        'tool_id', 'customer_id', 'operator_id',
+        'tool_id', 'tool_item_id', 'customer_id', 'operator_id',
         'from_location_id', 'to_location_id',
         'type', 'qty',
         'work_order', 'notes',
@@ -27,6 +27,11 @@ class Movement extends Model
     public function tool(): BelongsTo
     {
         return $this->belongsTo(Tool::class);
+    }
+
+    public function toolItem(): BelongsTo
+    {
+        return $this->belongsTo(ToolItem::class);
     }
 
     public function customer(): BelongsTo

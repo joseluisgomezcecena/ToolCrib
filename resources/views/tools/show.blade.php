@@ -43,18 +43,138 @@
             <button type="button" @click="modal = 'scrap'" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-md text-sm">🗑️ Scrap</button>
         </div>
 
-        <div class="bg-white rounded-lg shadow p-4 flex items-center gap-6">
-            <img src="{{ route('tools.qr', [$tool, 'format' => 'svg', 'size' => 200]) }}" alt="QR {{ $tool->code }}" class="w-40 h-40">
-            <div>
-                <div class="text-xs uppercase text-gray-500">Código QR</div>
-                <div class="font-mono text-xl mt-1">{{ $tool->code }}</div>
-                <div class="text-sm text-gray-600 mt-2">Escanea con el kiosko o celular. Imprime la etiqueta y pégala en la herramienta.</div>
-                <div class="mt-3 flex gap-2">
-                    <a href="{{ route('tools.label', $tool) }}" target="_blank" class="text-sm px-3 py-1.5 bg-indigo-600 text-white rounded-md">Ver etiqueta</a>
-                    <a href="{{ route('tools.qr', [$tool, 'format' => 'png', 'size' => 600]) }}" download="qr-{{ $tool->code }}.png" class="text-sm px-3 py-1.5 border border-gray-300 rounded-md">Descargar PNG</a>
+        @unless($tool->isSerialized())
+            <div class="bg-white rounded-lg shadow p-4 flex items-center gap-6">
+                <img src="{{ route('tools.qr', [$tool, 'format' => 'svg', 'size' => 200]) }}" alt="QR {{ $tool->code }}" class="w-40 h-40">
+                <div>
+                    <div class="text-xs uppercase text-gray-500">Código QR (catálogo / bulk)</div>
+                    <div class="font-mono text-xl mt-1">{{ $tool->code }}</div>
+                    <div class="text-sm text-gray-600 mt-2">Esta herramienta es bulk: pega el mismo QR en cada unidad si quieres.</div>
+                    <div class="mt-3 flex gap-2">
+                        <a href="{{ route('tools.label', $tool) }}" target="_blank" class="text-sm px-3 py-1.5 bg-indigo-600 text-white rounded-md">Ver etiqueta</a>
+                        <a href="{{ route('tools.qr', [$tool, 'format' => 'png', 'size' => 600]) }}" download="qr-{{ $tool->code }}.png" class="text-sm px-3 py-1.5 border border-gray-300 rounded-md">Descargar PNG</a>
+                    </div>
                 </div>
             </div>
-        </div>
+        @endunless
+
+        @if($tool->isSerialized() && $items)
+            <div class="bg-white rounded-lg shadow" x-data="{ editing: null, showAdd: false }">
+                <div class="px-4 py-3 border-b flex justify-between items-center">
+                    <h3 class="font-semibold">Instancias ({{ $tool->items()->count() }} piezas)</h3>
+                    <div class="flex gap-2">
+                        <a href="{{ route('items.sheet', $tool) }}" target="_blank" class="text-xs px-3 py-1.5 bg-emerald-600 text-white rounded-md">🖨 Hoja QR de todas</a>
+                        @can('tools.update')
+                            <button type="button" @click="showAdd = !showAdd" class="text-xs px-3 py-1.5 bg-indigo-600 text-white rounded-md">+ Agregar instancia(s)</button>
+                        @endcan
+                    </div>
+                </div>
+
+                <div x-show="showAdd" x-cloak class="bg-indigo-50 border-b p-4">
+                    <form method="POST" action="{{ route('items.store', $tool) }}" class="flex flex-wrap gap-2 items-end">
+                        @csrf
+                        <div>
+                            <label class="block text-xs font-medium">Tag específico (opcional)</label>
+                            <input name="tag" placeholder="ej. {{ $tool->code }}-099" class="border rounded-md px-3 py-1.5 text-sm font-mono">
+                        </div>
+                        <div class="text-gray-400 text-sm">— o bien —</div>
+                        <div>
+                            <label class="block text-xs font-medium">Cantidad a generar</label>
+                            <input type="number" name="count" min="1" max="500" value="1" class="border rounded-md px-3 py-1.5 text-sm w-24">
+                            <span class="text-xs text-gray-500">autogenera tags</span>
+                        </div>
+                        <button class="px-3 py-1.5 bg-indigo-600 text-white rounded-md text-sm">Crear</button>
+                    </form>
+                </div>
+
+                <table class="min-w-full text-sm">
+                    <thead class="bg-gray-50 text-xs uppercase text-gray-600">
+                        <tr>
+                            <th class="px-4 py-2 text-left">Tag</th>
+                            <th class="px-4 py-2">Estado</th>
+                            <th class="px-4 py-2">Condición</th>
+                            <th class="px-4 py-2 text-left">Ubicación</th>
+                            <th class="px-4 py-2">Próx. mant.</th>
+                            <th class="px-4 py-2">Ciclos</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y">
+                        @forelse($items as $it)
+                            <tr :class="editing === {{ $it->id }} ? 'bg-amber-50' : ''">
+                                <td class="px-4 py-2 font-mono text-sm">{{ $it->tag }}</td>
+                                <td class="px-4 py-2 text-center">
+                                    <span @class([
+                                        'text-xs px-2 py-0.5 rounded',
+                                        'bg-emerald-100 text-emerald-800' => $it->status === 'available',
+                                        'bg-blue-100 text-blue-800' => $it->status === 'in_use',
+                                        'bg-amber-100 text-amber-800' => $it->status === 'maintenance',
+                                        'bg-gray-200 text-gray-800' => $it->status === 'lost',
+                                        'bg-red-100 text-red-800' => $it->status === 'scrapped',
+                                    ])>{{ $it->status }}</span>
+                                </td>
+                                <td class="px-4 py-2 text-center">{{ $it->condition }}</td>
+                                <td class="px-4 py-2 text-gray-700">{{ optional($it->location)->name ?? '—' }}</td>
+                                <td class="px-4 py-2 text-center {{ $it->isMaintenanceDue() ? 'text-red-600 font-bold' : '' }}">{{ $it->next_maintenance_at?->format('d/M/Y') ?? '—' }}</td>
+                                <td class="px-4 py-2 text-center">{{ $it->used_cycles }}{{ $tool->life_cycles ? ' / '.$tool->life_cycles : '' }}</td>
+                                <td class="px-4 py-2 text-right whitespace-nowrap space-x-1">
+                                    <a href="{{ route('items.label', [$tool, $it]) }}" target="_blank" class="text-emerald-600 hover:underline text-xs">QR</a>
+                                    @can('tools.update')
+                                        <button type="button" @click="editing = (editing === {{ $it->id }} ? null : {{ $it->id }})" class="text-gray-600 hover:underline text-xs">Editar</button>
+                                    @endcan
+                                </td>
+                            </tr>
+                            <tr x-show="editing === {{ $it->id }}" x-cloak>
+                                <td colspan="7" class="bg-amber-50 p-4">
+                                    <form method="POST" action="{{ route('items.update', [$tool, $it]) }}" class="grid grid-cols-1 md:grid-cols-5 gap-3">
+                                        @csrf @method('PUT')
+                                        <div><label class="block text-xs">Tag</label>
+                                            <input name="tag" value="{{ $it->tag }}" class="w-full border rounded px-2 py-1 text-sm font-mono"></div>
+                                        <div><label class="block text-xs">Estado</label>
+                                            <select name="status" class="w-full border rounded px-2 py-1 text-sm">
+                                                @foreach(['available','in_use','maintenance','lost','scrapped'] as $s)
+                                                    <option value="{{ $s }}" @selected($it->status===$s)>{{ $s }}</option>
+                                                @endforeach
+                                            </select></div>
+                                        <div><label class="block text-xs">Condición</label>
+                                            <select name="condition" class="w-full border rounded px-2 py-1 text-sm">
+                                                @foreach(['ok','danado','scrap'] as $c)
+                                                    <option value="{{ $c }}" @selected($it->condition===$c)>{{ $c }}</option>
+                                                @endforeach
+                                            </select></div>
+                                        <div><label class="block text-xs">Ubicación</label>
+                                            <select name="location_id" class="w-full border rounded px-2 py-1 text-sm">
+                                                <option value="">—</option>
+                                                @foreach($locations as $l)
+                                                    <option value="{{ $l->id }}" @selected($it->location_id==$l->id)>{{ $l->name }}</option>
+                                                @endforeach
+                                            </select></div>
+                                        <div><label class="block text-xs">Próx. mant.</label>
+                                            <input type="date" name="next_maintenance_at" value="{{ $it->next_maintenance_at?->toDateString() }}" class="w-full border rounded px-2 py-1 text-sm"></div>
+                                        <div class="md:col-span-5 flex justify-end gap-2">
+                                            <button type="button" @click="editing = null" class="px-3 py-1 text-sm border rounded">Cancelar</button>
+                                            <button class="px-3 py-1 text-sm bg-indigo-600 text-white rounded">Guardar</button>
+                                        </div>
+                                    </form>
+                                    @can('tools.delete')
+                                        <form method="POST" action="{{ route('items.destroy', [$tool, $it]) }}"
+                                              onsubmit="return confirm('¿Eliminar instancia {{ $it->tag }}?')" class="mt-2 text-right">
+                                            @csrf @method('DELETE')
+                                            <button class="px-3 py-1 text-sm bg-red-600 text-white rounded">Eliminar instancia</button>
+                                        </form>
+                                    @endcan
+                                </td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="7" class="px-4 py-8 text-center text-gray-500">Sin instancias. Genera algunas arriba.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+                <div class="border-t">
+                    @include('partials.pagination', ['paginator' => $items])
+                </div>
+            </div>
+        @endif
 
         <div class="bg-white rounded-lg shadow">
             <div class="px-4 py-3 border-b"><h3 class="font-semibold">Historial de movimientos</h3></div>
@@ -70,7 +190,7 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y">
-                    @forelse($tool->movements()->latest('occurred_at')->limit(50)->get() as $m)
+                    @forelse($movements as $m)
                         <tr>
                             <td class="px-4 py-1.5">{{ $m->occurred_at->format('d/M/Y H:i') }}</td>
                             <td class="px-4 py-1.5 text-center">
@@ -93,6 +213,9 @@
                     @endforelse
                 </tbody>
             </table>
+            <div class="border-t">
+                @include('partials.pagination', ['paginator' => $movements])
+            </div>
         </div>
 
         {{-- Modal: Recepción --}}

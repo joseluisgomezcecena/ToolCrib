@@ -11,7 +11,7 @@ class Maintenance extends Model
     use HasFactory;
 
     protected $fillable = [
-        'tool_id', 'performed_by',
+        'tool_id', 'tool_item_id', 'performed_by',
         'type', 'status',
         'scheduled_at', 'started_at', 'completed_at',
         'cost', 'notes',
@@ -27,6 +27,11 @@ class Maintenance extends Model
     public function tool(): BelongsTo
     {
         return $this->belongsTo(Tool::class);
+    }
+
+    public function toolItem(): BelongsTo
+    {
+        return $this->belongsTo(ToolItem::class);
     }
 
     public function performer(): BelongsTo

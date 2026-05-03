@@ -14,7 +14,7 @@ class Tool extends Model
     protected $fillable = [
         'code', 'name', 'description',
         'category_id', 'location_id',
-        'type', 'condition',
+        'type', 'tracking_mode', 'condition',
         'qty_total', 'qty_available',
         'stock_min', 'stock_max',
         'unit_cost',
@@ -55,6 +55,16 @@ class Tool extends Model
         return $this->hasMany(Alert::class);
     }
 
+    public function items(): HasMany
+    {
+        return $this->hasMany(ToolItem::class);
+    }
+
+    public function isSerialized(): bool
+    {
+        return $this->tracking_mode === 'serialized';
+    }
+
     public function isLowStock(): bool
     {
         return $this->qty_available <= $this->stock_min;
@@ -71,6 +81,17 @@ class Tool extends Model
         return $this->condition !== 'ok'
             || ! $this->is_active
             || $this->isMaintenanceDue();
+    }
+
+    public function nextItemTag(): string
+    {
+        $base = $this->code;
+        $last = $this->items()
+            ->where('tag', 'like', $base.'-%')
+            ->selectRaw('MAX(CAST(SUBSTRING_INDEX(tag, "-", -1) AS UNSIGNED)) as n')
+            ->value('n');
+        $next = ((int) $last) + 1;
+        return sprintf('%s-%03d', $base, $next);
     }
 
     public function scopeDurable($q)
