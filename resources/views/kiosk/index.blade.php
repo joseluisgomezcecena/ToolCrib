@@ -10,8 +10,11 @@
     <style>
         body { background: #0f172a; color: #fff; }
         .stage { min-height: 100vh; }
-        #qr-reader { border: 4px dashed #38bdf8; border-radius: 14px; overflow: hidden; background: #0f172a; }
-        #qr-reader video { width: 100% !important; height: auto !important; }
+        #qr-reader { border: 3px dashed #38bdf8; border-radius: 14px; overflow: hidden; background: #0f172a; }
+        #qr-reader video { width: 100% !important; height: auto !important; max-height: 70vh; object-fit: cover; }
+        @media (max-width: 1023px) {
+            #qr-reader { min-height: 60vh; }
+        }
     </style>
     <script>
         window.KIOSK_ROUTES = {
@@ -52,28 +55,28 @@
         </button>
     </div>
 
-    <main class="flex-1 p-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div class="space-y-4">
-            <h2 class="text-xl font-semibold" x-text="stepTitle"></h2>
+    <main class="flex-1 p-3 sm:p-6 grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        <div class="space-y-3 order-1">
+            <h2 class="text-lg sm:text-xl font-semibold" x-text="stepTitle"></h2>
 
-            <div class="flex flex-wrap gap-2 items-center" x-show="cameras.length > 0">
-                <label class="text-sm text-slate-400">Cámara:</label>
-                <select @change="switchCamera($event)" class="bg-slate-800 border border-slate-600 rounded px-3 py-1.5 text-sm">
+            <div id="qr-reader" class="w-full lg:aspect-video"></div>
+
+            <div x-show="scannerError" class="bg-red-900/60 border border-red-500 rounded p-3 text-sm" x-text="scannerError"></div>
+
+            <div class="flex flex-wrap gap-2 items-center" x-show="cameras.length > 1">
+                <label class="text-xs text-slate-400">Cámara:</label>
+                <select @change="switchCamera($event)" class="bg-slate-800 border border-slate-600 rounded px-2 py-1 text-xs flex-1">
                     <template x-for="cam in cameras" :key="cam.id">
                         <option :value="cam.id" x-text="cam.label || cam.id"></option>
                     </template>
                 </select>
-                <button @click="startCamera()" class="bg-sky-600 hover:bg-sky-700 px-3 py-1.5 rounded text-sm">Reiniciar cámara</button>
+                <button @click="startCamera()" class="bg-sky-600 hover:bg-sky-700 px-2 py-1 rounded text-xs">Reiniciar</button>
             </div>
 
-            <div id="qr-reader" class="w-full aspect-video"></div>
-
-            <div x-show="scannerError" class="bg-red-900/60 border border-red-500 rounded p-3 text-sm" x-text="scannerError"></div>
-
-            <div class="text-sm text-slate-400">O usa lector USB / escribe manual:</div>
+            <div class="text-xs text-slate-400">O lector USB / manual:</div>
             <input type="text" x-model="manualCode" @keydown.enter.prevent="handleScan(manualCode)"
-                   class="w-full bg-slate-800 border border-slate-600 rounded-md px-4 py-3 text-lg font-mono"
-                   :placeholder="mode === 'checkin' ? 'Tag o código de la herramienta a devolver' : (step === 'employee' ? 'Gafete del empleado' : (step === 'tool' ? 'Código de herramienta' : ''))">
+                   class="w-full bg-slate-800 border border-slate-600 rounded-md px-3 py-2 text-base font-mono"
+                   :placeholder="mode === 'checkin' ? 'Tag o código a devolver' : (step === 'employee' ? 'Gafete' : (step === 'tool' ? 'Código herramienta' : ''))">
         </div>
 
         <div x-show="mode === 'checkout'" class="bg-slate-800 rounded-lg p-6 space-y-4">
