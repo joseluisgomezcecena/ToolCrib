@@ -12,14 +12,18 @@
     </x-slot>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
-        <form method="GET" class="bg-white p-3 rounded-md shadow-sm flex flex-wrap gap-2 items-end">
+        <form method="GET" x-data class="bg-white p-3 rounded-md shadow-sm flex flex-wrap gap-2 items-end">
             <div>
                 <label class="text-xs text-gray-600">Buscar</label>
-                <input name="q" value="{{ request('q') }}" placeholder="Código o nombre" class="border rounded-md px-3 py-1.5 text-sm w-60" />
+                <input name="q" value="{{ request('q') }}" placeholder="Código o nombre"
+                       class="border rounded-md px-3 py-1.5 text-sm w-60"
+                       @input.debounce.800ms="$el.form.requestSubmit()"
+                       @keydown.enter.prevent="$el.form.requestSubmit()"
+                       @if(request('q')) autofocus @endif />
             </div>
             <div>
                 <label class="text-xs text-gray-600">Categoría</label>
-                <select name="category_id" class="border rounded-md px-3 py-1.5 text-sm">
+                <select name="category_id" class="border rounded-md px-3 py-1.5 text-sm" @change="$el.form.requestSubmit()">
                     <option value="">Todas</option>
                     @foreach($categories as $c)
                         <option value="{{ $c->id }}" @selected(request('category_id') == $c->id)>{{ $c->name }}</option>
@@ -28,14 +32,14 @@
             </div>
             <div>
                 <label class="text-xs text-gray-600">Tipo</label>
-                <select name="type" class="border rounded-md px-3 py-1.5 text-sm">
+                <select name="type" class="border rounded-md px-3 py-1.5 text-sm" @change="$el.form.requestSubmit()">
                     <option value="">Todos</option>
                     <option value="durable" @selected(request('type') == 'durable')>Durable</option>
                     <option value="consumible" @selected(request('type') == 'consumible')>Consumible</option>
                 </select>
             </div>
             <label class="inline-flex items-center text-sm gap-1">
-                <input type="checkbox" name="low_stock" value="1" @checked(request('low_stock'))> Stock bajo
+                <input type="checkbox" name="low_stock" value="1" @checked(request('low_stock')) @change="$el.form.requestSubmit()"> Stock bajo
             </label>
             <button class="bg-gray-800 text-white px-3 py-1.5 rounded-md text-sm">Filtrar</button>
         </form>

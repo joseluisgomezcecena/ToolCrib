@@ -2,11 +2,11 @@
     <x-slot name="header"><h2 class="font-semibold text-xl">Alertas</h2></x-slot>
 
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
-        <form method="GET" class="bg-white p-3 rounded-md shadow-sm flex flex-wrap gap-2 items-end">
+        <form method="GET" x-data class="bg-white p-3 rounded-md shadow-sm flex flex-wrap gap-2 items-end">
             <label class="inline-flex items-center text-sm gap-1">
-                <input type="checkbox" name="unresolved" value="1" @checked(request('unresolved', true))> Solo sin resolver
+                <input type="checkbox" name="unresolved" value="1" @checked(request('unresolved', true)) @change="$el.form.requestSubmit()"> Solo sin resolver
             </label>
-            <select name="severity" class="border rounded-md px-3 py-1.5 text-sm">
+            <select name="severity" class="border rounded-md px-3 py-1.5 text-sm" @change="$el.form.requestSubmit()">
                 <option value="">Cualquier severidad</option>
                 <option value="critical" @selected(request('severity')==='critical')>Crítica</option>
                 <option value="warning" @selected(request('severity')==='warning')>Advertencia</option>

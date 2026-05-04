@@ -7,14 +7,18 @@
     </x-slot>
 
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
-        <form method="GET" class="bg-white p-3 rounded-md shadow-sm flex flex-wrap gap-2 items-end">
+        <form method="GET" x-data class="bg-white p-3 rounded-md shadow-sm flex flex-wrap gap-2 items-end">
             <div>
                 <label class="text-xs text-gray-600">Orden de compra</label>
-                <input name="po" value="{{ request('po') }}" placeholder="OC-..." class="border rounded-md px-3 py-1.5 text-sm">
+                <input name="po" value="{{ request('po') }}" placeholder="OC-..."
+                       class="border rounded-md px-3 py-1.5 text-sm"
+                       @input.debounce.800ms="$el.form.requestSubmit()"
+                       @keydown.enter.prevent="$el.form.requestSubmit()"
+                       @if(request('po')) autofocus @endif>
             </div>
             <div>
                 <label class="text-xs text-gray-600">Herramienta</label>
-                <select name="tool_id" class="border rounded-md px-3 py-1.5 text-sm">
+                <select name="tool_id" class="border rounded-md px-3 py-1.5 text-sm" @change="$el.form.requestSubmit()">
                     <option value="">Todas</option>
                     @foreach($tools as $t)
                         <option value="{{ $t->id }}" @selected(request('tool_id') == $t->id)>{{ $t->code }} — {{ $t->name }}</option>

@@ -9,15 +9,19 @@
     </x-slot>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
-        <form method="GET" class="bg-white p-3 rounded-md shadow-sm flex flex-wrap gap-2 items-end">
-            <input name="q" value="{{ request('q') }}" placeholder="Código o nombre" class="border rounded-md px-3 py-1.5 text-sm" />
-            <select name="type" class="border rounded-md px-3 py-1.5 text-sm">
+        <form method="GET" x-data class="bg-white p-3 rounded-md shadow-sm flex flex-wrap gap-2 items-end">
+            <input name="q" value="{{ request('q') }}" placeholder="Código o nombre"
+                   class="border rounded-md px-3 py-1.5 text-sm"
+                   @input.debounce.800ms="$el.form.requestSubmit()"
+                   @keydown.enter.prevent="$el.form.requestSubmit()"
+                   @if(request('q')) autofocus @endif />
+            <select name="type" class="border rounded-md px-3 py-1.5 text-sm" @change="$el.form.requestSubmit()">
                 <option value="">Todos</option>
                 @foreach(['checkout','checkin','consume','transfer','scrap','receipt'] as $t)
                     <option value="{{ $t }}" @selected(request('type')===$t)>{{ $t }}</option>
                 @endforeach
             </select>
-            <label class="inline-flex items-center text-sm gap-1"><input type="checkbox" name="open" value="1" @checked(request('open'))> Solo abiertas</label>
+            <label class="inline-flex items-center text-sm gap-1"><input type="checkbox" name="open" value="1" @checked(request('open')) @change="$el.form.requestSubmit()"> Solo abiertas</label>
             <button class="bg-gray-800 text-white px-3 py-1.5 rounded-md text-sm">Filtrar</button>
         </form>
 

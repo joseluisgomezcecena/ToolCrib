@@ -2,18 +2,18 @@
     <x-slot name="header"><h2 class="font-semibold text-xl">Consumo</h2></x-slot>
 
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
-        <form method="GET" class="bg-white p-3 rounded-md shadow-sm flex flex-wrap gap-2 items-end">
+        <form method="GET" x-data class="bg-white p-3 rounded-md shadow-sm flex flex-wrap gap-2 items-end">
             <div>
                 <label class="text-xs text-gray-600">Desde</label>
-                <input type="date" name="from" value="{{ $from->format('Y-m-d') }}" class="border rounded-md px-3 py-1.5 text-sm">
+                <input type="date" name="from" value="{{ $from->format('Y-m-d') }}" class="border rounded-md px-3 py-1.5 text-sm" @change="$el.form.requestSubmit()">
             </div>
             <div>
                 <label class="text-xs text-gray-600">Hasta</label>
-                <input type="date" name="to" value="{{ $to->format('Y-m-d') }}" class="border rounded-md px-3 py-1.5 text-sm">
+                <input type="date" name="to" value="{{ $to->format('Y-m-d') }}" class="border rounded-md px-3 py-1.5 text-sm" @change="$el.form.requestSubmit()">
             </div>
             <div>
                 <label class="text-xs text-gray-600">Agrupar por</label>
-                <select name="group_by" class="border rounded-md px-3 py-1.5 text-sm">
+                <select name="group_by" class="border rounded-md px-3 py-1.5 text-sm" @change="$el.form.requestSubmit()">
                     <option value="location" @selected($groupBy==='location')>Ubicación (máquina / línea)</option>
                     <option value="work_order" @selected($groupBy==='work_order')>Orden de producción</option>
                 </select>
