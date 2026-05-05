@@ -7,9 +7,10 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Tool Crib">
-<link rel="apple-touch-icon" href="{{ asset('icons/icon.svg') }}">
+<link rel="apple-touch-icon" href="{{ asset('icons/apple-touch-icon.png') }}">
 
 <link rel="icon" type="image/svg+xml" href="{{ asset('icons/icon.svg') }}">
+<link rel="alternate icon" type="image/png" href="{{ asset('icons/apple-touch-icon.png') }}">
 
 <script>
     if ('serviceWorker' in navigator) {

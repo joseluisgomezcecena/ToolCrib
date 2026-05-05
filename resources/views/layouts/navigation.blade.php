@@ -7,7 +7,9 @@
         <div class="flex justify-between h-16">
             <div class="flex">
                 <div class="shrink-0 flex items-center">
-                    <a href="{{ route('dashboard') }}" class="font-bold text-indigo-600">Nexus Tool Crib</a>
+                    <a href="{{ route('dashboard') }}" class="flex items-center gap-2">
+                        <img src="{{ asset('icons/logo.png') }}" alt="{{ config('app.name') }}" class="h-9 w-auto">
+                    </a>
                 </div>
 
                 <div class="hidden space-x-6 sm:-my-px sm:ms-10 sm:flex items-center">
