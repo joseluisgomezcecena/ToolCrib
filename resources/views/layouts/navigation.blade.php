@@ -8,7 +8,7 @@
             <div class="flex">
                 <div class="shrink-0 flex items-center">
                     <a href="{{ route('dashboard') }}" class="flex items-center gap-2">
-                        <img style="width: 50px !important;" src="{{ asset('icons/logo.png') }}" alt="{{ config('app.name') }}" class="h-9 w-auto">
+                        <img style="width: 120px !important;" src="{{ asset('icons/logo.png') }}" alt="{{ config('app.name') }}" class="h-9 w-auto">
                     </a>
                 </div>
 
